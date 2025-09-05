@@ -1,0 +1,468 @@
+/* Channel Simulator Styles */
+.channel-simulator {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.simulator-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.simulator-header h2 {
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.simulator-header p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Channel Tabs */
+.channel-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  gap: 10px;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  border-color: #2563eb;
+  background: #f3f4f6;
+}
+
+.tab-button.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* SMS Simulator */
+.sms-simulator {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.simulator-section h3 {
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.simulator-section p {
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* Phone Mockup */
+.phone-mockup {
+  background: #1f2937;
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.phone-header {
+  color: white;
+  margin-bottom: 15px;
+}
+
+.phone-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.sms-conversation {
+  background: white;
+  border-radius: 15px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-header {
+  background: #f3f4f6;
+  padding: 15px;
+  border-radius: 15px 15px 0 0;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.contact-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.contact-number {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.message-area {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.message {
+  margin-bottom: 15px;
+}
+
+.message.outgoing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.message-bubble {
+  color: white;
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.placeholder-message {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 50px;
+}
+
+.sms-input {
+  display: flex;
+  padding: 10px 15px;
+  border-top: 1px solid #e5e7eb;
+  gap: 10px;
+}
+
+.message-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  outline: none;
+}
+
+.send-sms-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-sms-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Scenarios */
+.scenarios-section {
+  margin-top: 20px;
+}
+
+.scenarios-section h4 {
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.scenarios-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.scenario-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scenario-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.scenario-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.scenario-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.scenario-customer {
+  font-size: 14px;
+  color: #2563eb;
+  margin-bottom: 2px;
+}
+
+.scenario-vehicle {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.scenario-preview {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Email Simulator */
+.email-simulator {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Email Mockup */
+.email-mockup {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.email-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.email-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+}
+
+.email-logo {
+  font-weight: 600;
+  color: #374151;
+}
+
+.email-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.email-btn {
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.email-content {
+  padding: 20px;
+}
+
+.email-meta {
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.email-meta div {
+  margin-bottom: 4px;
+}
+
+.subject-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.body-textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.email-actions-bottom {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.send-email-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.send-email-button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.send-email-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Email Templates */
+.email-templates {
+  margin-top: 20px;
+}
+
+.email-templates h4 {
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.template-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.template-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.template-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.template-from {
+  font-size: 12px;
+  color: #2563eb;
+  margin-bottom: 2px;
+}
+
+.template-subject {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.template-preview {
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Custom Customer Form */
+.custom-customer {
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-customer h4 {
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.customer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.customer-form input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.customer-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sms-simulator,
+  .email-simulator {
+    grid-template-columns: 1fr;
+  }
+  
+  .phone-mockup {
+    max-width: 100%;
+  }
+  
+  .channel-tabs {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .tab-button {
+    width: 200px;
+  }
+}

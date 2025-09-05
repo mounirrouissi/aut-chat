@@ -1,0 +1,29 @@
+<!-- Add these dependencies to your pom.xml if you want to enable Stanford CoreNLP -->
+
+<!-- Stanford CoreNLP Core -->
+<dependency>
+    <groupId>edu.stanford.nlp</groupId>
+    <artifactId>stanford-corenlp</artifactId>
+    <version>4.5.1</version>
+</dependency>
+
+<!-- Stanford CoreNLP Models (English) -->
+<dependency>
+    <groupId>edu.stanford.nlp</groupId>
+    <artifactId>stanford-corenlp</artifactId>
+    <version>4.5.1</version>
+    <classifier>models</classifier>
+</dependency>
+
+<!-- Additional language models if needed -->
+<dependency>
+    <groupId>edu.stanford.nlp</groupId>
+    <artifactId>stanford-corenlp</artifactId>
+    <version>4.5.1</version>
+    <classifier>models-english</classifier>
+</dependency>
+
+<!-- 
+Note: These dependencies are large (500MB+) and will significantly increase your application size.
+Only add them if you need the advanced NLP capabilities.
+-->
