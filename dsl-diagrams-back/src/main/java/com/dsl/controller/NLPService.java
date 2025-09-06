@@ -85,6 +85,14 @@ public class NLPService {
         serviceWeights.put("fix", 1.1);
         serviceWeights.put("tune up", 1.3);
         serviceWeights.put("alignment", 1.4);
+        serviceWeights.put("transmission fluid change", 1.4);
+        serviceWeights.put("coolant flush", 1.4);
+        serviceWeights.put("battery check", 1.3);
+        serviceWeights.put("air filter replacement", 1.4);
+        serviceWeights.put("spark plug replacement", 1.4);
+        serviceWeights.put("diagnostics", 1.3);
+        serviceWeights.put("smog check", 1.3);
+        serviceWeights.put("emissions test", 1.3);
         intentKeywords.put("service_inquiry", serviceWeights);
 
         // Booking requests
@@ -97,6 +105,9 @@ public class NLPService {
         bookingWeights.put("available", 1.0);
         bookingWeights.put("set up", 1.1);
         bookingWeights.put("arrange", 1.0);
+        bookingWeights.put("make an appointment", 1.5);
+        bookingWeights.put("can I come in", 1.2);
+        bookingWeights.put("I need to see a mechanic", 1.3);
         intentKeywords.put("booking_request", bookingWeights);
 
         // Confirmations
@@ -248,7 +259,7 @@ public class NLPService {
 
         // Expanded car makes
         entityPatterns.put("vehicle_make", Pattern.compile(
-                "\\b(toyota|honda|ford|chevrolet|chevy|nissan|hyundai|kia|mazda|subaru|bmw|mercedes|audi|volkswagen|vw|lexus|acura|infiniti|cadillac|buick|gmc|jeep|dodge|chrysler|ram|lincoln|volvo|jaguar|land rover|porsche|tesla|mitsubishi)\\b",
+                "(?:my car is|i drive a|i have a|my vehicle is|car is|drive a|own a|got a)\\s+([A-Z][a-zA-Z0-9- ]+)",
                 Pattern.CASE_INSENSITIVE));
 
         // Enhanced service types
@@ -436,7 +447,7 @@ public class NLPService {
         Map<String, Double> intentScores = new HashMap<>();
 
         // Context-aware intent classification
-        String conversationState = context != null ? context.getConversationState() : null;
+        String conversationState = context != null ? String.valueOf(context.getConversationState()) : null;
 
         // Apply context boosting
         if ("awaiting_name".equals(conversationState) && containsPersonName(message)) {
@@ -673,19 +684,22 @@ public class NLPService {
             return getRandomTemplate("greeting_new");
         }
 
-        // Default response based on intent
-        return generateDefaultResponse(intent, entities);
+        // Default response based on intent and state
+        return generateDefaultResponse(intent, entities, context);
     }
 
-    private String getRandomTemplate(String templateKey) {
-        List<String> templates = responseTemplates.get(templateKey);
-        if (templates != null && !templates.isEmpty()) {
-            return templates.get(new Random().nextInt(templates.size()));
+    private String generateDefaultResponse(String intent, Map<String, String> entities, UserContext context) {
+        if (context != null && context.getConversationState() != null) {
+            switch (context.getConversationState().toString()) {
+                case "AWAITING_VEHICLE_INFO":
+                    return "What is the year, make, and model of your vehicle?";
+                case "AWAITING_SERVICE_INQUIRY":
+                    return "What kind of service are you looking for?";
+                case "AWAITING_BOOKING_CONFIRMATION":
+                    return "When would you like to schedule your appointment?";
+            }
         }
-        return "I'm here to help you with your automotive needs.";
-    }
 
-    private String generateDefaultResponse(String intent, Map<String, String> entities) {
         switch (intent) {
             case "provide_name":
                 return "Thank you! Now, what vehicle do you need service for?";
@@ -709,6 +723,14 @@ public class NLPService {
             default:
                 return "I'm here to help with your automotive needs. Could you please tell me more about what you're looking for?";
         }
+    }
+
+    private String getRandomTemplate(String templateKey) {
+        List<String> templates = responseTemplates.get(templateKey);
+        if (templates != null && !templates.isEmpty()) {
+            return templates.get(new Random().nextInt(templates.size()));
+        }
+        return "I'm here to help you with your automotive needs.";
     }
 
     private String generateTireResponse(Map<String, String> entities) {

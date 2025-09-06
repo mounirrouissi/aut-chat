@@ -255,65 +255,49 @@ public class StanfordNLPService {
     private String classifyIntent(Annotation annotation) {
         try {
             List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
-            
             if (sentences == null || sentences.isEmpty()) {
                 return "UNKNOWN";
             }
-            
+
             CoreMap sentence = sentences.get(0);
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
-            
             if (tokens == null || tokens.isEmpty()) {
                 return "UNKNOWN";
             }
-            
-            // Get full text for pattern matching
-            String fullText = annotation.get(CoreAnnotations.TextAnnotation.class);
-            if (fullText == null) {
-                return "UNKNOWN";
-            }
-            fullText = fullText.toLowerCase();
-            
-            // Simple intent classification based on POS tags and patterns
-            String firstWord = tokens.get(0).get(CoreAnnotations.TextAnnotation.class);
-            if (firstWord == null) {
-                return "UNKNOWN";
-            }
-            firstWord = firstWord.toLowerCase();
-            
-            // Question patterns
-            if (firstWord.matches("what|when|where|who|why|how|can|could|would|will|do|does|did|is|are|was|were")) {
-                return "QUESTION";
-            }
-            
-            // Request patterns
-            if (firstWord.matches("please|schedule|book|reserve") || 
-                fullText.contains("i need") || fullText.contains("i want") || fullText.contains("i would like")) {
-                return "REQUEST";
-            }
-            
-            // Greeting patterns
-            if (firstWord.matches("hello|hi|hey|good")) {
+
+            String fullText = annotation.get(CoreAnnotations.TextAnnotation.class).toLowerCase();
+
+            // Keyword-based classification for simple intents
+            if (fullText.matches(".*\\b(hello|hi|hey|good morning|good afternoon|good evening|howdy|greetings)\\b.*")) {
                 return "GREETING";
             }
-            
-            // Affirmation patterns
-            if (firstWord.matches("yes|yeah|yep|sure|ok|okay|right|correct")) {
+            if (fullText.matches(".*\\b(yes|yeah|yep|sure|ok|okay|right|correct|confirm|absolutely|definitely)\\b.*")) {
                 return "AFFIRMATION";
             }
-            
-            // Negation patterns
-            if (firstWord.matches("no|nope|not|never|wrong|incorrect")) {
+            if (fullText.matches(".*\\b(no|nope|not|never|wrong|incorrect|cancel)\\b.*")) {
                 return "NEGATION";
             }
-            
-            // Check for complaint indicators
-            if (fullText.contains("problem") || fullText.contains("issue") || fullText.contains("complaint") || 
+            if (fullText.contains("problem") || fullText.contains("issue") || fullText.contains("complaint") ||
                 fullText.contains("terrible") || fullText.contains("awful") || fullText.contains("bad")) {
                 return "COMPLAINT";
             }
+
+            // POS-based classification for more complex intents
+            String firstTokenPos = tokens.get(0).get(CoreAnnotations.PartOfSpeechAnnotation.class);
+            String firstTokenText = tokens.get(0).get(CoreAnnotations.TextAnnotation.class).toLowerCase();
+
+            if (firstTokenPos.startsWith("W") || firstTokenText.matches("can|could|would|will|do|does|did|is|are|was|were")) {
+                return "QUESTION";
+            }
+
+            if (firstTokenPos.startsWith("VB")) {
+                return "REQUEST";
+            }
             
-            // Default to statement
+            if (fullText.contains("i need") || fullText.contains("i want") || fullText.contains("i would like") || fullText.contains("please")) {
+                return "REQUEST";
+            }
+
             return "STATEMENT";
         } catch (Exception e) {
             System.err.println("Error classifying intent: " + e.getMessage());

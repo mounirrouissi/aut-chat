@@ -22,6 +22,9 @@ public class AdvancedChatController {
     @PostMapping("/message")
     public ResponseEntity<Map<String, Object>> processMessage(@RequestBody ChatRequest request) {
         try {
+            // Add a 3-second delay to simulate human-like response time
+            Thread.sleep(3000);
+
             // Generate session ID if not provided
             String sessionId = request.getSessionId() != null ? request.getSessionId() : UUID.randomUUID().toString();
 

@@ -215,7 +215,7 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
     <div className="advanced-chat-container">
       <div className="chat-header">
         <h3>Advanced Auto Service Assistant</h3>
-        <div className="chat-controls">
+        {/* <div className="chat-controls">
           <label className="debug-toggle">
             <input
               type="checkbox"
@@ -224,7 +224,7 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
             />
             Debug Mode
           </label>
-        </div>
+        </div> */}
       </div>
 
       <div className="messages-container">
