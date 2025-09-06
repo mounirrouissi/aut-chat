@@ -26,7 +26,7 @@ public class AdvancedChatController {
             String sessionId = request.getSessionId() != null ? request.getSessionId() : UUID.randomUUID().toString();
 
             // Initialize or update context
-                UserContext context = request.getContext() != null ? request.getContext() : new UserContext();
+            UserContext context = request.getContext() != null ? request.getContext() : new UserContext();
             context.setLastInteraction(LocalDateTime.now());
             context.setMessageCount(context.getMessageCount() + 1);
 

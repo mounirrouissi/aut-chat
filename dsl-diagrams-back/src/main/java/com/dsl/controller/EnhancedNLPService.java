@@ -92,7 +92,7 @@ public class EnhancedNLPService {
     
     private boolean isAutomotiveIntent(String intent) {
         return Arrays.asList("service_inquiry", "vehicle_info", "booking_request", 
-                           "emergency", "complaint", "time_expression").contains(intent);
+                           "emergency", "complaint", "time_expression", "oil_assistance", "tire_assistance").contains(intent);
     }
     
     private String mapStanfordIntentToOurs(String stanfordIntent) {
