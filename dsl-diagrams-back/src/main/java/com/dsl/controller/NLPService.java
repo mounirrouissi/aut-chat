@@ -369,6 +369,7 @@ public class NLPService {
         commonMisspellings.put("repare", "repair");
         commonMisspellings.put("servise", "service");
         commonMisspellings.put("inspectoin", "inspection");
+        commonMisspellings.put("tomorow", "tomorrow");
     }
 
     public NLPResult processMessage(String message, UserContext context) {
@@ -459,7 +460,7 @@ public class NLPService {
                 String keyword = keywordEntry.getKey();
                 Double weight = keywordEntry.getValue();
 
-                if (message.contains(keyword)) {
+                if (Pattern.compile("\\b" + Pattern.quote(keyword) + "\\b").matcher(message).find()) {
                     score += weight;
                     matchCount++;
                 }
@@ -501,7 +502,7 @@ public class NLPService {
             for (String keyword : keywords.keySet()) {
                 String[] keywordParts = keyword.split("\\s+");
                 for (String part : keywordParts) {
-                    if (part.length() > 3 && message.contains(part)) {
+                    if (part.length() > 3 && Pattern.compile("\\b" + Pattern.quote(part) + "\\b").matcher(message).find()) {
                         partialScore += 0.3; // Lower score for partial matches
                     }
                 }
@@ -702,6 +703,9 @@ public class NLPService {
                 return generateTireResponse(entities);
             case "oil_assistance":
                 return generateOilResponse(entities);
+            case "time_expression":
+                String time = entities.getOrDefault("time_expression", "the requested time");
+                return "Your appointment is scheduled for " + time + ". We look forward to seeing you then.";
             default:
                 return "I'm here to help with your automotive needs. Could you please tell me more about what you're looking for?";
         }
