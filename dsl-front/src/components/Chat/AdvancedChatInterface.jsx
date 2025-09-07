@@ -54,6 +54,13 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
   }, []); // Run once on component mount
 
   useEffect(() => {
+    if (initialContext && initialContext.initialMessage) {
+      setInputMessage(initialContext.initialMessage);
+      setTimeout(() => sendMessage(), 100);
+    }
+  }, [initialContext]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
@@ -207,7 +214,7 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
   return (
     <div className="advanced-chat-container">
       <div className="chat-header">
-        <h3>Advanced Auto Service Assistant</h3>
+        <h3> Auto Service Assistant</h3>
         {/* <div className="chat-controls">
           <label className="debug-toggle">
             <input
@@ -349,14 +356,6 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
             disabled={!inputMessage.trim() || isTyping}
           >
             Send
-          </button>
-          <button
-            onClick={toggleListening}
-            className={`microphone-button ${isListening ? 'listening' : ''}`}
-            disabled={!recognitionRef.current || isTyping}
-            title="Quick voice input (browser speech recognition)"
-          >
-            {isListening ? '🔴' : '🎤'}
           </button>
           <button
             onClick={() => setShowVoiceRecorder(true)}
