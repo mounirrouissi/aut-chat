@@ -12,4 +12,5 @@ export async function parseScript(script: string) {
   return res.data;
 }
 
+
 export default api;

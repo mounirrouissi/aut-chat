@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import VoiceRecorder from "../VoiceTranscription/VoiceRecorder";
 import "./AdvancedChat.css";
 
-const AdvancedChatInterface = ({ initialContext = null }) => {
+const AdvancedChatInterfaceOld = ({ initialContext = null }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [sessionId, setSessionId] = useState(null);
@@ -12,46 +11,75 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
   const messagesEndRef = useRef(null);
   const API_BASE_URL = "http://localhost:8080/api/chat";
 
-  // Speech Recognition state and setup
-  const [isListening, setIsListening] = useState(false);
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const recognitionRef = useRef(null);
-
   useEffect(() => {
-    // Initialize SpeechRecognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false; // Listen for a single utterance
-      recognitionRef.current.interimResults = false; // Only return final results
-      recognitionRef.current.lang = 'en-US'; // Set language
-
-      recognitionRef.current.onstart = () => {
-        setIsListening(true);
-        console.log('Speech recognition started');
+    // Initialize context from channel simulator if provided
+    if (initialContext) {
+      const mappedContext = {
+        customerName: initialContext.customerInfo?.name || initialContext.customerName,
+        customerId: initialContext.customerInfo?.customerId || initialContext.customerId,
+        vehicle: initialContext.customerInfo?.vehicle || initialContext.vehicle,
+        channel: initialContext.channel,
       };
+      setContext(mappedContext);
+      
+      // Generate session ID
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+      setSessionId(newSessionId);
+      
+      // Create channel-specific welcome message
+      const vehicleDisplay = mappedContext.vehicle 
+        ? (typeof mappedContext.vehicle === 'string' 
+            ? mappedContext.vehicle 
+            : `${mappedContext.vehicle.year || ''} ${mappedContext.vehicle.make || ''} ${mappedContext.vehicle.model || ''}`.trim())
+        : "vehicle";
 
-      recognitionRef.current.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInputMessage(transcript);
-        console.log('Speech recognition result:', transcript);
-        // Automatically send message after recognition
-        setTimeout(() => sendMessage(), 100);
-      };
+      let welcomeText;
+      switch (initialContext.channel) {
+        case "sms":
+          welcomeText = `Hi ${mappedContext.customerName}! I received your text message. I'm your advanced auto service assistant and I'm here to help you with your ${vehicleDisplay}. Let me assist you right away.`;
+          break;
+        case "email":
+          welcomeText = `Hello ${mappedContext.customerName}, thank you for your email${
+            initialContext.subject ? ` regarding "${initialContext.subject}"` : ""
+          }. I'm your advanced auto service assistant and I'll help you with your inquiry about your ${vehicleDisplay}.`;
+          break;
+        default:
+          welcomeText = `Hello ${mappedContext.customerName}! I'm your advanced auto service assistant. I'm here to help you with your ${vehicleDisplay}.`;
+      }
 
-      recognitionRef.current.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
+      addMessage({
+        text: welcomeText,
+        sender: "bot",
+        timestamp: new Date(),
+        intent: "greeting",
+        confidence: 1.0,
+        sentiment: "positive",
+      });
 
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-        console.log('Speech recognition ended');
-      };
+      // If there's an initial message, process it
+      if (initialContext.initialMessage) {
+        setTimeout(() => {
+          addMessage({
+            text: initialContext.initialMessage,
+            sender: "user",
+            timestamp: new Date(),
+          });
+          setInputMessage(initialContext.initialMessage);
+          setTimeout(() => sendMessage(), 100);
+        }, 500);
+      }
     } else {
-      console.warn('Web Speech API not supported in this browser.');
+      // Default welcome message
+      addMessage({
+        text: "Hello! I'm your advanced auto service assistant. I can help with vehicle maintenance, service bookings, and answer questions about your car. What's your name?",
+        sender: "bot",
+        timestamp: new Date(),
+        intent: "greeting",
+        confidence: 1.0,
+        sentiment: "positive",
+      });
     }
-  }, []); // Run once on component mount
+  }, [initialContext]);
 
   useEffect(() => {
     scrollToBottom();
@@ -155,27 +183,6 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
       e.preventDefault();
       sendMessage();
     }
-  };
-
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      setInputMessage(""); // Clear input before listening
-      recognitionRef.current.start();
-    }
-  };
-
-  const handleVoiceTranscription = (transcribedText) => {
-    setInputMessage(transcribedText);
-    setShowVoiceRecorder(false);
-    // Auto-send the transcribed message
-    setTimeout(() => sendMessage(), 100);
-  };
-
-  const handleVoiceError = (error) => {
-    console.error('Voice transcription error:', error);
-    setShowVoiceRecorder(false);
   };
 
   const formatTimestamp = (timestamp) => {
@@ -319,57 +326,25 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {showVoiceRecorder ? (
-        <div className="voice-recorder-modal">
-          <VoiceRecorder
-            onTranscriptionComplete={handleVoiceTranscription}
-            onError={handleVoiceError}
-            disabled={isTyping}
-          />
-          <button
-            onClick={() => setShowVoiceRecorder(false)}
-            className="close-voice-recorder"
-          >
-            ✕ Close
-          </button>
-        </div>
-      ) : (
-        <div className="input-container">
-          <textarea
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message here..."
-            className="message-input"
-            rows="1"
-          />
-          <button
-            onClick={sendMessage}
-            className="send-button"
-            disabled={!inputMessage.trim() || isTyping}
-          >
-            Send
-          </button>
-          <button
-            onClick={toggleListening}
-            className={`microphone-button ${isListening ? 'listening' : ''}`}
-            disabled={!recognitionRef.current || isTyping}
-            title="Quick voice input (browser speech recognition)"
-          >
-            {isListening ? '🔴' : '🎤'}
-          </button>
-          <button
-            onClick={() => setShowVoiceRecorder(true)}
-            className="whisper-button"
-            disabled={isTyping}
-            title="Advanced voice transcription (Whisper AI)"
-          >
-            🎙️
-          </button>
-        </div>
-      )}
+      <div className="input-container">
+        <textarea
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Type your message here..."
+          className="message-input"
+          rows="1"
+        />
+        <button
+          onClick={sendMessage}
+          className="send-button"
+          disabled={!inputMessage.trim() || isTyping}
+        >
+          Send
+        </button>
+      </div>
     </div>
   );
 };
 
-export default AdvancedChatInterface;
+export default AdvancedChatInterfaceOld;

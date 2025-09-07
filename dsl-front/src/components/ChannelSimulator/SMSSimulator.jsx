@@ -68,12 +68,14 @@ const SMSSimulator = ({ onStartConversation, customerInfo, setCustomerInfo }) =>
       const make = parts[1];
       const model = parts.slice(2).join(' ');
       
-      return {
-        year: isNaN(year) ? null : year,
-        make: make,
-        model: model
-      };
-    }
+              return {
+                year: isNaN(year) ? null : year,
+                make: make,
+                model: model,
+                color: null,
+                vin: null,
+                mileage: null
+              };    }
     return { year: null, make: vehicleString, model: null };
   };
 
