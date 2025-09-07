@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Transcribing from './Transcribing';
-import whisperService from '../../services/whisperService';
+import assemblyAITranscriptionService from '../../services/assemblyAITranscriptionService';
 import './VoiceRecorder.css';
 
 const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) => {
@@ -8,7 +8,7 @@ const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) =
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [transcriptionText, setTranscriptionText] = useState('');
     const [error, setError] = useState(null);
-    const [isInitializing, setIsInitializing] = useState(false);
+
     const [progress, setProgress] = useState(0);
 
     const mediaRecorderRef = useRef(null);
@@ -16,23 +16,6 @@ const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) =
     const streamRef = useRef(null);
 
     useEffect(() => {
-        // Initialize Whisper service
-        const initializeWhisper = async () => {
-            try {
-                setIsInitializing(true);
-                setProgress(10);
-                await whisperService.initialize();
-                setProgress(100);
-                setIsInitializing(false);
-            } catch (error) {
-                console.error('Failed to initialize Whisper:', error);
-                setError('Failed to initialize Whisper AI. Please check your internet connection and try again.');
-                setIsInitializing(false);
-            }
-        };
-
-        initializeWhisper();
-
         return () => {
             // Cleanup
             if (streamRef.current) {
@@ -88,7 +71,7 @@ const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) =
                     
                     // Transcribe with Whisper
                     setProgress(50);
-                    const transcribedText = await whisperService.transcribeAudio(audioBlob);
+                    const transcribedText = await assemblyAITranscriptionService.transcribeAudio(audioBlob);
                     
                     setProgress(100);
                     setTranscriptionText(transcribedText);
@@ -144,21 +127,7 @@ const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) =
         setIsTranscribing(false);
     };
 
-    // Show initializing UI when loading Whisper
-    if (isInitializing) {
-        return (
-            <div className="voice-recorder-container">
-                <Transcribing 
-                    downloading={true} 
-                    progress={progress}
-                />
-                <div className="initialization-message">
-                    <p>Initializing Whisper AI...</p>
-                    <p>This may take a moment on first use.</p>
-                </div>
-            </div>
-        );
-    }
+
 
     // Show transcribing UI when processing
     if (isTranscribing) {
@@ -169,7 +138,7 @@ const VoiceRecorder = ({ onTranscriptionComplete, onError, disabled = false }) =
                     progress={progress}
                 />
                 <div className="transcription-preview">
-                    <p>Transcribing your audio with Whisper AI...</p>
+                    <p>Transcribing your audio with AssemblyAI...</p>
                     {transcriptionText && (
                         <div className="final-text">
                             <strong>Transcribed:</strong> {transcriptionText}

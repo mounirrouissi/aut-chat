@@ -24,7 +24,7 @@ const AdvancedChatInterface = ({ initialContext = null }) => {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false; // Listen for a single utterance
       recognitionRef.current.interimResults = false; // Only return final results
-      recognitionRef.current.lang = 'en-US'; // Set language
+      recognitionRef.current.lang = 'en'; // Set language
 
       recognitionRef.current.onstart = () => {
         setIsListening(true);
