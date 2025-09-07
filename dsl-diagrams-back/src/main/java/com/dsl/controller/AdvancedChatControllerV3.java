@@ -5,6 +5,7 @@
 //import lombok.AllArgsConstructor;
 //import org.springframework.http.ResponseEntity;
 //import org.springframework.web.bind.annotation.*;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 //
 //import java.time.LocalDateTime;
 //import java.util.HashMap;
@@ -15,7 +16,7 @@
 //@RequestMapping("/api/v2/chat")
 //@CrossOrigin(origins = "*")
 //@AllArgsConstructor
-//public class AdvancedChatControllerOld {
+//public class AdvancedChatControllerV3 {
 //
 //    private final EnhancedNLPService enhancedNLPService;
 //    private final DatabaseChatService chatService;
@@ -64,6 +65,109 @@
 //            Map<String, Object> errorResponse = new HashMap<>();
 //            errorResponse.put("error", "Failed to process message");
 //            errorResponse.put("message", "I'm sorry, I encountered an error. Please try again or contact support.");
+//            errorResponse.put("timestamp", LocalDateTime.now());
+//            return ResponseEntity.status(500).body(errorResponse);
+//        }
+//    }
+//
+//    @PostMapping("/transcribe")
+//    public ResponseEntity<Map<String, Object>> transcribeAudio(@RequestBody byte[] audioBytes,
+//                                                               @RequestParam String sessionId,
+//                                                               @RequestParam(required = false) String contextJson) {
+//        try {
+//            // Add a 3-second delay to simulate human-like response time
+//            Thread.sleep(3000); // Keep the delay for consistency
+//
+//            // Transcribe audio
+////            String transcribedText = huggingFaceSTTService.transcribeAudio(audioBytes).block(); // Blocking for simplicity
+////
+//            // Deserialize contextJson to UserContext
+//            UserContext context = new UserContext(); // Default empty context
+//            if (contextJson != null && !contextJson.isEmpty()) {
+//                ObjectMapper mapper = new ObjectMapper();
+//                context = mapper.readValue(contextJson, UserContext.class);
+//            }
+//
+//            // Generate session ID if not provided (should be provided from frontend)
+//            if (sessionId == null || sessionId.isEmpty()) {
+//                sessionId = UUID.randomUUID().toString();
+//            }
+//
+//            // Initialize or update context
+//            context.setLastInteraction(LocalDateTime.now());
+//            context.setMessageCount(context.getMessageCount() + 1);
+//
+//            // Process transcribed text as a regular message
+//            ChatRequest chatRequest = new ChatRequest();
+//            chatRequest.setSessionId(sessionId);
+//            chatRequest.setMessage(transcribedText);
+//            chatRequest.setContext(context);
+//            chatRequest.setDebugMode(false); // Assuming debug mode is not enabled for voice input by default
+//
+//            return processMessage(chatRequest); // Reuse existing message processing logic
+//
+//        } catch (Exception e) {
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("error", "Failed to transcribe audio or process message");
+//            errorResponse.put("message", "I'm sorry, I encountered an error during voice processing. Please try again.");
+//            errorResponse.put("timestamp", LocalDateTime.now());
+//            return ResponseEntity.status(500).body(errorResponse);
+//        }
+//    }
+//
+//    @PostMapping("/whisper-transcribe")
+//    public ResponseEntity<Map<String, Object>> processWhisperTranscription(@RequestBody Map<String, Object> request) {
+//        try {
+//            String transcribedText = (String) request.get("transcribedText");
+//            String sessionId = (String) request.get("sessionId");
+//            Map<String, Object> contextData = (Map<String, Object>) request.get("context");
+//
+//            if (transcribedText == null || transcribedText.trim().isEmpty()) {
+//                Map<String, Object> errorResponse = new HashMap<>();
+//                errorResponse.put("error", "No transcribed text provided");
+//                errorResponse.put("message", "I didn't receive any transcribed text. Please try again.");
+//                return ResponseEntity.badRequest().body(errorResponse);
+//            }
+//
+//            // Generate session ID if not provided
+//            if (sessionId == null || sessionId.isEmpty()) {
+//                sessionId = UUID.randomUUID().toString();
+//            }
+//
+//            // Convert context data to UserContext
+//            UserContext context = new UserContext();
+//            if (contextData != null) {
+//                if (contextData.containsKey("customerName")) {
+//                    context.setCustomerName((String) contextData.get("customerName"));
+//                }
+//                if (contextData.containsKey("conversationState")) {
+//                    context.setConversationState((String) contextData.get("conversationState"));
+//                }
+//                if (contextData.containsKey("currentService")) {
+//                    context.setCurrentService((String) contextData.get("currentService"));
+//                }
+//                if (contextData.containsKey("emergencyMode")) {
+//                    context.setEmergencyMode((Boolean) contextData.get("emergencyMode"));
+//                }
+//            }
+//
+//            // Initialize or update context
+//            context.setLastInteraction(LocalDateTime.now());
+//            context.setMessageCount(context.getMessageCount() + 1);
+//
+//            // Process transcribed text as a regular message
+//            ChatRequest chatRequest = new ChatRequest();
+//            chatRequest.setSessionId(sessionId);
+//            chatRequest.setMessage(transcribedText);
+//            chatRequest.setContext(context);
+//            chatRequest.setDebugMode(false);
+//
+//            return processMessage(chatRequest);
+//
+//        } catch (Exception e) {
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("error", "Failed to process Whisper transcription");
+//            errorResponse.put("message", "I'm sorry, I encountered an error processing your voice message. Please try again.");
 //            errorResponse.put("timestamp", LocalDateTime.now());
 //            return ResponseEntity.status(500).body(errorResponse);
 //        }
@@ -134,4 +238,5 @@
 //        debug.put("suggestedResponse", nlpResult.getSuggestedResponse());
 //        return debug;
 //    }
-//}*/
+//}
+//*/

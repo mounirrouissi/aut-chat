@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class EnhancedNLPServiceV2 {
+public class EnhancedNLPService {
 
     private final NLPService basicNLPService;
     private final StanfordNLPService stanfordNLPService;
@@ -16,7 +16,7 @@ public class EnhancedNLPServiceV2 {
     private double confidenceThreshold;
 
     @Autowired
-    public EnhancedNLPServiceV2(NLPService basicNLPService, StanfordNLPService stanfordNLPService) {
+    public EnhancedNLPService(NLPService basicNLPService, StanfordNLPService stanfordNLPService) {
         this.basicNLPService = basicNLPService;
         this.stanfordNLPService = stanfordNLPService;
     }
