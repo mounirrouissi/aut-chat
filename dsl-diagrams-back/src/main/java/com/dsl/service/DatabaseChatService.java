@@ -97,12 +97,12 @@ public class DatabaseChatService {
 
         switch (intent) {
             case "greeting":
-                responseMessage = handleGreeting(updatedContext, entities, session);
+                responseMessage = handleGreeting(updatedContext, entities, session, nlpResult);
                 quickReplies = getGreetingQuickReplies();
                 break;
 
             case "provide_name":
-                responseMessage = handleNameProvision(updatedContext, entities, session);
+                responseMessage = handleNameProvision(updatedContext, entities, session, nlpResult);
                 quickReplies = getVehicleInfoQuickReplies();
                 break;
 
@@ -256,8 +256,31 @@ public class DatabaseChatService {
         return context;
     }
 
-    private String handleGreeting(UserContext context, Map<String, String> entities, ChatSession session) {
-        // Check if we have an existing customer
+    private String handleGreeting(UserContext context, Map<String, String> entities, ChatSession session, NLPResult nlpResult) {
+        String detectedName = nlpResult.getCustomerName(); // Get name from enhanced NLP
+
+        // Prioritize detected name from NLPResult
+        if (detectedName != null && !detectedName.isEmpty()) {
+            context.setCustomerName(detectedName);
+            // Try to find existing customer by detected name
+            List<Customer> customers = customerRepository.searchByName(detectedName);
+            if (!customers.isEmpty()) {
+                Customer customer = customers.get(0);
+                session.setCustomer(customer);
+                context.setCustomerId(customer.getId());
+                context.setCustomerName(customer.getFullName());
+                return String.format("Welcome back, %s! I see you have a %s. How can I help you today?",
+                        customer.getFirstName(), getCustomerVehicleInfo(customer));
+            } else {
+                // New customer with detected name
+                context.setConversationState("new_customer");
+                return String.format(
+                        "Nice to meet you, %s! I'm here to help with your automotive needs. What vehicle do you need service for?",
+                        detectedName);
+            }
+        }
+
+        // Original logic if no name detected by NLP
         if (context.getCustomerId() != null) {
             Optional<Customer> customer = customerRepository.findById(context.getCustomerId());
             if (customer.isPresent()) {
@@ -267,27 +290,7 @@ public class DatabaseChatService {
             }
         }
 
-        // Check if name was provided in greeting
-        String name = entities.get("person_name");
-        if (name != null) {
-            // Try to find existing customer
-            List<Customer> customers = customerRepository.searchByName(name);
-            if (!customers.isEmpty()) {
-                Customer customer = customers.get(0);
-                session.setCustomer(customer);
-                context.setCustomerId(customer.getId());
-                context.setCustomerName(customer.getFullName());
-                return String.format("Welcome back, %s! I see you have a %s. How can I help you today?",
-                        customer.getFirstName(), getCustomerVehicleInfo(customer));
-            } else {
-                context.setCustomerName(name);
-                context.setConversationState("new_customer");
-                return String.format(
-                        "Nice to meet you, %s! I'm here to help with your automotive needs. What vehicle do you need service for?",
-                        name);
-            }
-        }
-
+        // Fallback if no name detected and not a returning customer
         return "Hey! 👋 I'm AutoAssist. What can I help you with today?";
     }
 
@@ -353,8 +356,8 @@ public class DatabaseChatService {
      * }
      */
 
-    private String handleNameProvision(UserContext context, Map<String, String> entities, ChatSession session) {
-        String name = entities.get("person_name");
+    private String handleNameProvision(UserContext context, Map<String, String> entities, ChatSession session, NLPResult nlpResult) {
+        String name = nlpResult.getCustomerName(); // Get name from enhanced NLP
         if (name != null) {
             context.setCustomerName(name);
 

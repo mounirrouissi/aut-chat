@@ -20,4 +20,6 @@ public class StanfordNLPResult {
     private Double complexityScore; // 0.0 to 1.0
     private Double overallConfidence;
     private String processingTime;
+    private String customerName;
+    private String suggestedResponse;
 }

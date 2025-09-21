@@ -24,6 +24,7 @@ public class StanfordNLPService {
         try {
             System.out.println("Initializing Stanford CoreNLP pipeline...");
             initializeStanfordPipeline();
+            initializeResponseTemplates();
             initialized = true;
             System.out.println("Stanford CoreNLP pipeline initialized successfully!");
         } catch (Exception e) {
@@ -80,7 +81,16 @@ public class StanfordNLPService {
         
         // Extract entities
         Map<String, String> entities = extractEntities(annotation);
+        extractVehicleEntities(annotation, entities); // New call for vehicle entities
         result.setEntities(entities != null ? entities : new HashMap<>());
+
+        // Extract customer name using enhanced logic
+        String customerName = extractCustomerName(annotation, entities);
+        if (customerName != null) {
+            result.setCustomerName(customerName);
+            // Also add it to the entities map for consistency, using the mapped key
+            entities.put("person_name", customerName);
+        }
         
         // Extract sentiment
         String sentiment = extractSentiment(annotation);
@@ -102,8 +112,94 @@ public class StanfordNLPService {
         
         // Overall confidence
         result.setOverallConfidence(calculateOverallConfidence(result));
+
+        // Generate suggested response
+        String suggestedResponse = generateSuggestedResponse(result.getIntent(), result.getEntities(), result.getSentiment());
+        result.setSuggestedResponse(suggestedResponse);
         
         return result;
+    }
+    
+    private String extractCustomerName(Annotation annotation, Map<String, String> entities) {
+        // 1. Prioritize NER result if it exists and is valid
+        if (entities.containsKey("person")) {
+            String person = entities.get("person");
+            // Simple validation: check if it's not just a single character or a common non-name word
+            if (person.length() > 1 && !person.equalsIgnoreCase("customer") && person.split(" ").length <= 3) {
+                return person;
+            }
+        }
+
+        // 2. Rule-based extraction as a fallback
+        return extractCustomerNameWithRules(annotation);
+    }
+
+    private String extractCustomerNameWithRules(Annotation annotation) {
+        String text = annotation.get(CoreAnnotations.TextAnnotation.class);
+        List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+        if (sentences == null || sentences.isEmpty()) {
+            return null;
+        }
+
+        // Regex to find patterns like "my name is John Doe"
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+            "(?i)(?:my name is|I'm|I am|call me)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)");
+        java.util.regex.Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+
+        // Look for a name at the beginning of the first sentence (e.g., "John Doe here...")
+        CoreMap firstSentence = sentences.get(0);
+        List<CoreLabel> tokens = firstSentence.get(CoreAnnotations.TokensAnnotation.class);
+        if (tokens != null && tokens.size() >= 2) {
+            String token1 = tokens.get(0).get(CoreAnnotations.TextAnnotation.class);
+            String token2 = tokens.get(1).get(CoreAnnotations.TextAnnotation.class);
+
+            // Check if the first two tokens are capitalized (potential first and last name)
+            if (Character.isUpperCase(token1.charAt(0)) && token1.length() > 1 &&
+                Character.isUpperCase(token2.charAt(0)) && token2.length() > 1) {
+                // Avoid common sentence starters that are capitalized
+                if (!token1.equalsIgnoreCase("I") && !token1.equalsIgnoreCase("The")) {
+                    return token1 + " " + token2;
+                }
+            }
+            // Check for "Hi, I'm John"
+            if (tokens.size() >= 3 && token1.equalsIgnoreCase("Hi,") && token2.equalsIgnoreCase("I'm")) {
+                 return tokens.get(2).get(CoreAnnotations.TextAnnotation.class);
+            }
+        }
+
+        return null; // No name found
+    }
+    
+    private String generateSuggestedResponse(String intent, Map<String, String> entities, String sentiment) {
+        // Prioritize specific responses based on intent and entities
+        if ("GREETING".equals(intent)) {
+            if (entities.containsKey("person_name")) {
+                return getRandomTemplate("GREETING") + " " + entities.get("person_name") + "! How can I help you today?";
+            }
+            return getRandomTemplate("GREETING");
+        }
+        if ("COMPLAINT".equals(intent) && "negative".equals(sentiment)) {
+            return getRandomTemplate("COMPLAINT");
+        }
+        if ("QUESTION".equals(intent)) {
+            return getRandomTemplate("QUESTION");
+        }
+        if ("REQUEST".equals(intent)) {
+            return getRandomTemplate("REQUEST");
+        }
+        if ("AFFIRMATION".equals(intent)) {
+            return getRandomTemplate("AFFIRMATION");
+        }
+        if ("NEGATION".equals(intent)) {
+            return getRandomTemplate("NEGATION");
+        }
+
+        // Fallback to general templates
+        return getRandomTemplate(intent);
     }
     
     private Map<String, String> extractEntities(Annotation annotation) {
@@ -182,6 +278,67 @@ public class StanfordNLPService {
         }
         
         return entities;
+    }
+    
+    private void extractVehicleEntities(Annotation annotation, Map<String, String> entities) {
+        List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+        if (sentences == null || sentences.isEmpty()) {
+            return;
+        }
+
+        for (CoreMap sentence : sentences) {
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+            if (tokens == null || tokens.isEmpty()) {
+                continue;
+            }
+
+            // Look for patterns like "YEAR MAKE MODEL" or "MAKE MODEL"
+            for (int i = 0; i < tokens.size(); i++) {
+                CoreLabel token = tokens.get(i);
+                String word = token.get(CoreAnnotations.TextAnnotation.class);
+                String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+
+                // Try to extract year (NNP or CD and looks like a year)
+                if (pos != null && (pos.equals("CD") || pos.equals("NNP")) && word.matches("^(19|20)\\d{2}$")) {
+                    entities.putIfAbsent("vehicle_year", word);
+                    // Look for make and model after the year
+                    if (i + 1 < tokens.size()) {
+                        CoreLabel nextToken = tokens.get(i + 1);
+                        String nextWord = nextToken.get(CoreAnnotations.TextAnnotation.class);
+                        String nextPos = nextToken.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+
+                        // Simple check for capitalized words as potential make/model
+                        if (nextPos != null && nextPos.equals("NNP") && Character.isUpperCase(nextWord.charAt(0))) {
+                            entities.putIfAbsent("vehicle_make", nextWord);
+                            if (i + 2 < tokens.size()) {
+                                CoreLabel thirdToken = tokens.get(i + 2);
+                                String thirdWord = thirdToken.get(CoreAnnotations.TextAnnotation.class);
+                                String thirdPos = thirdToken.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                                if (thirdPos != null && thirdPos.equals("NNP") && Character.isUpperCase(thirdWord.charAt(0))) {
+                                    entities.putIfAbsent("vehicle_model", thirdWord);
+                                }
+                            }
+                        }
+                    }
+                }
+                // Try to extract make and model without year (e.g., "Honda Civic")
+                else if (pos != null && pos.equals("NNP") && Character.isUpperCase(word.charAt(0))) {
+                    // Check if it's a common car make (simple heuristic)
+                    List<String> commonMakes = Arrays.asList("Honda", "Toyota", "Ford", "Chevrolet", "Nissan", "BMW", "Mercedes", "Audi", "Volkswagen", "Hyundai", "Kia", "Subaru", "Mazda", "Jeep", "Tesla");
+                    if (commonMakes.contains(word)) {
+                        entities.putIfAbsent("vehicle_make", word);
+                        if (i + 1 < tokens.size()) {
+                            CoreLabel nextToken = tokens.get(i + 1);
+                            String nextWord = nextToken.get(CoreAnnotations.TextAnnotation.class);
+                            String nextPos = nextToken.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                            if (nextPos != null && nextPos.equals("NNP") && Character.isUpperCase(nextWord.charAt(0))) {
+                                entities.putIfAbsent("vehicle_model", nextWord);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private String extractSentiment(Annotation annotation) {
@@ -387,10 +544,53 @@ public class StanfordNLPService {
         }
     }
     
+    private final Map<String, List<String>> responseTemplates = new HashMap<>();
+
+    private void initializeResponseTemplates() {
+        responseTemplates.put("GREETING", Arrays.asList(
+                "Hello! I'm your auto service assistant. How can I help you today?",
+                "Hi there! Welcome. What can I do for you?",
+                "Good day! How may I assist you with your automotive needs?"
+        ));
+        responseTemplates.put("QUESTION", Arrays.asList(
+                "That's a good question. What specifically would you like to know?",
+                "I can help with that. What information are you looking for?"
+        ));
+        responseTemplates.put("REQUEST", Arrays.asList(
+                "I can help with that request. Please tell me more.",
+                "Understood. What exactly do you need assistance with?"
+        ));
+        responseTemplates.put("COMPLAINT", Arrays.asList(
+                "I understand your concern. Please tell me more about the issue.",
+                "I'm sorry to hear that. How can I help resolve this problem?"
+        ));
+        responseTemplates.put("AFFIRMATION", Arrays.asList(
+                "Great!",
+                "Understood.",
+                "Okay."
+        ));
+        responseTemplates.put("NEGATION", Arrays.asList(
+                "No problem.",
+                "Understood. Is there anything else I can help with?"
+        ));
+        responseTemplates.put("UNKNOWN", Arrays.asList(
+                "I'm not sure I understand. Could you rephrase that?",
+                "I'm still learning. Can you provide more details?"
+        ));
+    }
+
+    private String getRandomTemplate(String templateKey) {
+        List<String> templates = responseTemplates.get(templateKey);
+        if (templates != null && !templates.isEmpty()) {
+            return templates.get(new Random().nextInt(templates.size()));
+        }
+        return "I'm here to help you.";
+    }
+
     public boolean isInitialized() {
         return initialized;
     }
-    
+
     public String getStatus() {
         if (!initialized) {
             return "Not initialized";

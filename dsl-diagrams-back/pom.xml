@@ -12,7 +12,7 @@
 	<artifactId>dsl</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>dsl</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Demo  project for Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -96,6 +96,12 @@
 			<artifactId>stanford-corenlp</artifactId>
 			<version>4.5.1</version>
 			<classifier>models-english</classifier>
+		</dependency>
+		<!-- Twilio Dependency -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>8.31.1</version>
 		</dependency>
 	</dependencies>
 

@@ -18,4 +18,5 @@ public class NLPResult {
     private boolean requiresHumanHandoff;
     private String suggestedResponse;
     private String processingMethod; // "rule-based", "hybrid", "rule-based-fallback"
+    private String customerName;
 }
